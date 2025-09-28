@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Journal - Pure CSS Grid Layout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-font: 'Inter', sans-serif;
+            --text-color: rgb(55, 65, 81); /* gray-800 */
+            --light-text-color: rgb(107, 114, 128); /* gray-500 */
+            --border-color: rgb(211, 211, 211); /* d3d3d3 approximation */
+            --header-max-width: 720px;
+        }
+
+        /* Base Styles (Tailwind reset equivalent) */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: var(--primary-font);
+            background-color: #fff;
+            color: var(--text-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* Utility Classes (Custom CSS container for responsiveness) */
+        .container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem; /* px-4 */
+        }
+        
+        /* Screen size equivalent for 640px (sm) */
+        @media (min-width: 640px) {
+            .container {
+                padding-left: 1.5rem; /* sm:px-6 */
+                padding-right: 1.5rem; /* sm:px-6 */
+            }
+        }
+
+        .container-max-header {
+            max-width: var(--header-max-width);
+        }
+
+        /* --- Header & Navigation (Flexbox) --- */
+        .main-header {
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            padding-bottom: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 800; /* font-extrabold */
+            letter-spacing: -0.05em; /* tracking-tight */
+            color: #1f2937; /* gray-900 */
+        }
+        
+        .header-nav {
+            display: flex;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            gap: 0 1.5rem; /* Row gap 0, column gap 1.5rem */
+        }
+        
+        .header-nav a {
+            color: var(--light-text-color);
+            transition: color 150ms ease-in-out;
+        }
+        .header-nav a:hover {
+            color: #111827; /* gray-900 */
+        }
+
+        /* --- Featured Section (Flexbox) --- */
+        .featured-section {
+            margin-bottom: 4rem; /* mb-16 */
+            display: flex;
+            flex-direction: column;
+            gap: 0 20px; /* Row gap 0, column gap 20px */
+        }
+        
+        /* Tablet layout (md: equivalent) - stacks the rightmost column below the middle column */
+        @media (min-width: 768px) and (max-width: 1023px) {
+              .featured-section {
+                 flex-direction: row;
+                 flex-wrap: wrap;
+              }
+              .featured-section > :first-child {
+                  flex: 1 1 50%;
+              }
+              .featured-section > :nth-child(2) {
+                  flex: 1 1 50%;
+              }
+              .featured-right-list {
+                  flex: 1 1 100%; /* Full width under the first two columns */
+              }
+         }
+
+        /* Desktop layout (lg: equivalent) - 3 columns */
+        @media (min-width: 1024px) {
+            .featured-section {
+                flex-direction: row;
+            }
+            .featured-section > :first-child {
+                flex: 2 1 0;
+            }
+            .featured-section > :nth-child(2) {
+                flex: 1 1 0;
+            }
+            .featured-section > :nth-child(3) {
+                flex: 1 1 0;
+            }
+            .top-stories-wrapper, .featured-middle-list, .featured-right-list {
+                /* Remove any mobile-specific borders/padding */
+                border-left: none;
+                padding-left: 0;
+                border-top: none;
+                padding-top: 0;
+            }
+        }
+
+        /* --- Column 1: Primary Featured Article --- */
+        .featured-primary-article {
+            /* Space handled by parent gap */
+        }
+        
+        .article-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+        }
+        
+        .article-meta {
+            font-size: 0.875rem;
+            color: var(--light-text-color);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block; 
+        }
+        
+        .featured-title {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 800;
+            line-height: 1.25; /* leading-tight */
+            margin-bottom: 1rem;
+        }
+        
+        .featured-excerpt {
+            font-size: 1.125rem; /* text-lg */
+            color: rgb(75, 85, 99); /* gray-600 */
+            margin-bottom: 1.5rem;
+        }
+
+        .article-actions {
+            display: flex;
+            align-items: center;
+            gap: 0 1rem; /* Row gap 0, column gap 1rem */
+        }
+        
+        .read-time {
+            font-size: 0.875rem;
+            color: var(--light-text-color);
+        }
+
+        .read-button {
+            font-size: 0.875rem;
+            font-weight: 600; /* font-semibold */
+            color: rgb(55, 65, 81); /* gray-700 */
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            transition: background-color 150ms ease-in-out;
+        }
+        .read-button:hover {
+            background-color: rgb(243, 244, 246); /* hover:bg-gray-100 */
+        }
+
+        /* --- Column 2: Middle List (Image on Top) --- */
+        .featured-middle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0 20px;
+        }
+
+        .medium-story-item img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            margin-bottom: 0.75rem;
+        }
+        .medium-story-item .story-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* --- Column 3: Far Right List (Thumbnail on Right) --- */
+        .featured-right-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0 20px; /* Gap between stories */
+        }
+
+        .right-list-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px; /* Small inner gap for compact list */
+        }
+        
+        .right-list-item .text-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-list-item .thumbnail {
+            flex-shrink: 0;
+            width: 4rem; 
+            height: 4rem; 
+            overflow: hidden;
+            order: 2; /* Put thumbnail on the right */
+        }
+        .right-list-item .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .right-list-item .story-title {
+            font-size: 0.9375rem; /* Slightly smaller title for dense list */
+            font-weight: 600;
+            line-height: 1.3; 
+            margin-bottom: 0.25rem;
+        }
+        
+        .right-list-item .story-meta {
+            font-size: 0.875rem; /* text-sm */
+            color: var(--light-text-color);
+        }
+
+        /* --- General Story Hover Effect --- */
+        .story-item a:hover .story-title {
+            text-decoration: underline;
+            color: rgb(37, 99, 235); /* hover:text-blue-600 */
+        }
+        
+        /* --- Recent Posts Grid (Flexbox) --- */
+        .recent-posts-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 20px; /* Row gap 0, column gap 20px */
+            margin-top: 4rem;
+        }
+        .post-card {
+            flex: 0 0 50%; /* 2 columns on mobile */
+        }
+
+        /* Tablet Layout (sm: equivalent) */
+        @media (min-width: 640px) {
+            .post-card {
+                flex: 0 0 calc((100% - 40px) / 3); /* 3 columns */
+            }
+        }
+
+        /* Desktop Layout (lg: equivalent) */
+        @media (min-width: 1024px) {
+            .post-card {
+                flex: 0 0 calc((100% - 60px) / 4); /* 4 columns */
+            }
+        }
+        
+        .post-card .card-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        /* Title alignment fix (fixed height) */
+        .card-title-fixed {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600;
+            line-height: 1.5; /* leading-relaxed */
+            margin-bottom: 0.5rem;
+            height: 3.5rem; /* h-14 (fixed height) */
+            overflow: hidden;
+        }
+        
+        .card-meta {
+            font-size: 0.875rem; /* text-sm */
+            color: var(--light-text-color);
+        }
+
+        /* Call to Action */
+        .cta-wrapper {
+            margin-top: 4rem;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: rgb(55, 65, 81);
+            padding: 0.75rem 2rem; /* px-8 py-3 */
+            transition: background-color 200ms ease-in-out;
+        }
+        .cta-button:hover {
+            background-color: rgb(243, 244, 246); /* hover:bg-gray-100 */
+        }
+
+        /* Responsive display utilities */
+        .sm-inline-block {
+            display: none;
+        }
+        @media (min-width: 640px) {
+            .sm-inline-block {
+                display: inline-block;
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        .main-footer {
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--light-text-color);
+        }
+        
+        .footer-links {
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 0 1rem;
+        }
+        .footer-links a:hover {
+            color: #1f2937;
+        }
+        .footer-links span {
+            color: rgb(209, 213, 219); /* gray-300 */
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="main-header">
+        <div class="container header-content container-max-header">
+            <!-- Logo/Site Title -->
+            <a href="#" class="logo">
+                The Journal
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="header-nav">
+                <a href="#">Home</a>
+                <a href="#" class="sm-inline-block">Topics</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container main-content">
+        
+        <!-- Section 1: Featured Articles (3-Column Layout on Desktop) -->
+        <section class="featured-section">
+
+            <!-- Column 1: Primary Featured Article (Largest) -->
+            <article class="featured-primary-article">
+                <a href="#" class="article-image">
+                    <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" 
+                            alt="Featured Article Header Image">
+                </a>
+
+                <span class="article-meta">Data Centers</span>
+                <a href="#">
+                    <h3 class="featured-title">
+                        Fire at South Korean government data centre takes hundreds of services offline
+                    </h3>
+                </a>
+                <div class="featured-excerpt">
+                    Old data centre design, lithium-ion battery turns battery fire into a national crisis.
+                </div>
+                <div class="article-actions">
+                    <span class="story-meta">
+                        Sept 27 · Paul Mah
+                    </span>
+                </div>
+            </article>
+
+            <!-- Column 2: Middle List (Medium Image on Top) -->
+            <div class="featured-middle-list">
+
+                <!-- Middle Story 1 -->
+                <article class="medium-story-item">
+                    <a href="#">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Medium Thumbnail">
+                        <h4 class="story-title">Cyberattack brings Jaguar Land Rover to its knees</h4>
+                    </a>
+                    <span class="story-meta">Sept 26 · Paul Mah</span>
+                </article>
+
+                <!-- Middle Story 2 -->
+                <article class="medium-story-item">
+                    <a href="#">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Medium Thumbnail">
+                        <h4 class="story-title">Liquid cooling leak damages millions of dollars in GPUs</h4>
+                    </a>
+                    <span class="story-meta">Sept 25 · Paul Mah</span>
+                </article>
+
+            </div>
+
+
+            <!-- Column 3: Far Right List (Dense, Thumbnail on Right) -->
+            <aside class="featured-right-list">
+                
+                <!-- Right Story 1 -->
+                <article class="right-list-item story-item">
+                    <div class="text-content">
+                        <a href="#">
+                            <h4 class="story-title">
+                                Malaysia's data centres turn to wastewater as water runs dry
+                            </h4>
+                        </a>
+                        <span class="story-meta">Sept 23 · Paul Mah</span>
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Thumbnail">
+                    </div>
+                </article>
+
+                <!-- Right Story 2 -->
+                <article class="right-list-item story-item">
+                    <div class="text-content">
+                        <a href="#">
+                            <h4 class="story-title">
+                                Equinix launches first data centre in Chennai
+                            </h4>
+                        </a>
+                        <span class="story-meta">Sept 22 · Paul Mah</span>
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Thumbnail">
+                    </div>
+                </article>
+                
+                <!-- Right Story 3 -->
+                <article class="right-list-item story-item">
+                    <div class="text-content">
+                        <a href="#">
+                            <h4 class="story-title">
+                                ROG Falcata: the split keyboard rated for 100 million keystrokes
+                            </h4>
+                        </a>
+                        <span class="story-meta">Sept 20 · Paul Mah</span>
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Thumbnail">
+                    </div>
+                </article>
+
+            </aside>
+        </section>
+        
+        <!-- Section 2: Recent Posts Grid (Dense 4-Column Layout) -->
+        <section>
+            <h2 class="featured-title" style="font-size: 1.875rem; margin-bottom: 2rem;">Recent Posts</h2>
+            
+            <div class="recent-posts-grid">
+
+                <!-- Post Card 1 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Productivity</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            The Simple 5-Step Routine to Master Deep Work
+                        </h4>
+                    </a>
+                    <span class="card-meta">Sept 22 · John Doe</span>
+                </article>
+
+                <!-- Post Card 2 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Technology</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            Why Serverless is the Future of Small Business
+                        </h4>
+                    </a>
+                    <span class="card-meta">Sept 18 · Jane Smith</span>
+                </article>
+
+                <!-- Post Card 3 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Lifestyle</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            Declutter Your Digital Life: A Guide to Inbox Zero
+                        </h4>
+                    </a>
+                    <span class="card-meta">Sept 15 · Alex Ray</span>
+                </article>
+
+                <!-- Post Card 4 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Finance</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            The 3 Budgeting Habits That Actually Stick
+                        </h4>
+                    </a>
+                    <span class="card-meta">Sept 10 · Maria Chen</span>
+                </article>
+                
+                <!-- Post Card 5 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Mindfulness</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            A Beginner's Guide to Silent Morning Routines
+                        </h4>
+                    </a>
+                    <span class="card-meta">Sept 5 · Paul Lee</span>
+                </article>
+
+                <!-- Post Card 6 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Business</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            Scaling Operations Without Sacrificing Quality
+                        </h4>
+                    </a>
+                    <span class="card-meta">Aug 28 · Sam Wu</span>
+                </article>
+                
+                <!-- Post Card 7 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Design</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            The Revival of Brutalism in Modern Web Interfaces
+                        </h4>
+                    </a>
+                    <span class="card-meta">Aug 20 · Leo King</span>
+                </article>
+
+                <!-- Post Card 8 -->
+                <article class="post-card">
+                    <a href="#" class="card-image">
+                        <img src="https://t3.ftcdn.net/jpg/03/60/13/68/360_F_360136819_xnCorUk5ELrbdThp3Z4Wh8mGpm53wa0k.jpg" alt="Post Image">
+                    </a>
+                    <!-- Changed div to span -->
+                    <span class="article-meta">Software Dev</span>
+                    <a href="#">
+                        <h4 class="card-title-fixed">
+                            Managing State in Large-Scale JavaScript Projects
+                        </h4>
+                    </a>
+                    <span class="card-meta">Aug 15 · Chris Green</span>
+                </article>
+
+            </div>
+
+            <!-- Call to Action / Archive Link -->
+            <div class="cta-wrapper">
+                <a href="#" class="cta-button">
+                    View All Articles &rarr;
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container container-max-header">
+            <div>&copy; 2025 The Minimalist Journal. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <span>|</span>
+                <a href="#">Terms of Use</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
